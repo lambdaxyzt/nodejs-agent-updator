@@ -1,0 +1,26 @@
+{
+  "name": "agent-updator",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon -w .env -w src/** src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@humanwhocodes/env": "^2.2.2",
+    "axios": "^1.3.3",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.3",
+    "dotenv-expand": "^10.0.0",
+    "fs-extra": "^11.1.0",
+    "luxon": "^3.2.1",
+    "node-cron": "^3.0.2",
+    "node-fetch": "^3.3.0",
+    "pm2": "^5.2.2",
+    "winston": "^3.8.2"
+  }
+}
