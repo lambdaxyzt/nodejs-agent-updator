@@ -15,21 +15,23 @@ import logger from "./logging/index.js";
 
 const {
     DOMAIN,
-    TOKEN,
+    AGENT_TOKEN,
     AGENT_URL,
+    AGENT_DIRECTORY,
     AGENT_HASH_URL,
     AGENT_ENV_URL,
     AGENT_ENV_HASH_URL,
-    AGENT_PATH,
-    AGENT_ENV_PATH,
-    AGENT_PATH_HASH,
-    AGENT_PATH_ENVHASH,
     AGENT_PROCESS_NAME,
 } = env.required;
 
+const AGENT_PATH = AGENT_DIRECTORY + "/agent.js"
+const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
+const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
+const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
+
 const fetchOption = {
     method: 'post',
-    body: JSON.stringify({token:TOKEN}),
+    body: JSON.stringify({token:AGENT_TOKEN}),
     headers: {'Content-Type': 'application/json'}
 }
 
