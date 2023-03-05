@@ -19,7 +19,7 @@ let alignColorsAndTime = winston.format.combine(
 );
 
 const logger = winston.createLogger({
-    level: ( NODE_ENV==="development" ? "debug" : "error" ),
+    level: ( NODE_ENV==="development" ? "debug" : "info" ),
     transports: [
         new winston.transports.Console({
             format: winston.format.combine(winston.format.colorize(), alignColorsAndTime)

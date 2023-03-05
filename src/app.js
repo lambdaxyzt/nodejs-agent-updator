@@ -48,11 +48,12 @@ async function getAgentHash() {
             throw new Error(body.message)
         })
         .catch(function (error) {
-            logger.error(error.message);
+            logger.error(error.message + " : error getting hash");
         })
 }
 
 async function getAgentEnvHash() {
+    console.log(AGENT_ENV_HASH_URL)
     return fetch(AGENT_ENV_HASH_URL,fetchOption)
         .then((response)=>{
             return response.json()
@@ -66,7 +67,7 @@ async function getAgentEnvHash() {
             throw new Error(body.message)
         })
         .catch(function (error) {
-            logger.error(error.message);
+            logger.error(error.message + " : error getting env hash");
         })
 }
 
@@ -83,7 +84,7 @@ async function getAgent() {
             throw new Error(body.message)
         })
         .catch(function (error) {
-            logger.error(error.message);
+            logger.error(error.message  + " : error getting agent ");
         })
 }
 
@@ -100,15 +101,15 @@ async function getAgentEnv() {
             throw new Error(body.message)
         })
         .catch(function (error) {
-            logger.error(error.message);
+            logger.error(error.message  + " : error getting agent env ");
         })
 }
 
 async function updateAgent() {
-
     //get hash
     const hash = await getAgentHash()
     const env_hash = await getAgentEnvHash() || "nohashfound"
+    console.log("updating agent")
 
      // check if env file exist
     if (!fss.existsSync(AGENT_PATH_ENVHASH)) {
@@ -124,7 +125,6 @@ async function updateAgent() {
     const prevEnvHash = await fs.readFile(AGENT_PATH_ENVHASH,"utf-8")
 
     if ((hash !== prevHash) || (env_hash !== prevEnvHash)) {
-
         const file_content = await getAgent()
         const env_content =  await getAgentEnv() || {}
         console.log(env_content)
@@ -141,41 +141,37 @@ async function updateAgent() {
     return false
 }
 
-cron.schedule("*/2 * * * * *",async ()=>{
-    logger.info(`⚙ running agent update`);
-    try {
-        await pm2.connect()
-        if (!fss.existsSync(AGENT_ENV_PATH)) {
-            await fsExtra.outputFile(AGENT_ENV_PATH,JSON.stringify({}),"utf-8")
-        }
-        const env_file = JSON.parse(
-            fss.readFileSync(AGENT_ENV_PATH,"utf-8")
-        )
-
-        const agentUpdated = await updateAgent()
-        if(agentUpdated) {
-            logger.info(`agent updated !!! so go from pm2`);
-            if(! await isProcessStarted(AGENT_PROCESS_NAME)){
-                await pm2.start({
-                    script    : AGENT_PATH,
-                    name      : AGENT_PROCESS_NAME,
-                    env       : env_file,
-                })
-                logger.info(`script did not start before , it now started`);
-            } else {
-                await pm2.delete(AGENT_PROCESS_NAME)
-                await pm2.start({
-                    script    : AGENT_PATH,
-                    name      : AGENT_PROCESS_NAME,
-                    env       : env_file,
-                })
-                logger.info(`script restarted in pm2 watch agent !`);
-            }
-        }
-    }catch (error) {
-        logger.error(error.message)
-    } finally {
-        await pm2.disconnect()
+try {
+    await pm2.connect()
+    if (!fss.existsSync(AGENT_ENV_PATH)) {
+        await fsExtra.outputFile(AGENT_ENV_PATH,JSON.stringify({}),"utf-8")
     }
-})
+    const env_file = JSON.parse(
+        fss.readFileSync(AGENT_ENV_PATH,"utf-8")
+    )
 
+    const agentUpdated = await updateAgent()
+    if(agentUpdated) {
+        logger.info(`agent updated !!! so go from pm2`);
+        if(! await isProcessStarted(AGENT_PROCESS_NAME)){
+            await pm2.start({
+                script    : AGENT_PATH,
+                name      : AGENT_PROCESS_NAME,
+                env       : env_file,
+            })
+            logger.info(`script did not start before , it now started`);
+        } else {
+            await pm2.delete(AGENT_PROCESS_NAME)
+            await pm2.start({
+                script    : AGENT_PATH,
+                name      : AGENT_PROCESS_NAME,
+                env       : env_file,
+            })
+            logger.info(`script restarted in pm2 watch agent !`);
+        }
+    }
+}catch (error) {
+    console.log(error)
+} finally {
+    await pm2.disconnect()
+}
