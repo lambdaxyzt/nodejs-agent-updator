@@ -108,6 +108,7 @@ async function getAgentEnv() {
 async function updateAgent() {
     //get hash
     const hash = await getAgentHash()
+    console.log("hash",hash)
     const env_hash = await getAgentEnvHash() || "nohashfound"
     console.log("updating agent")
 
@@ -121,6 +122,7 @@ async function updateAgent() {
         logger.info(`file : ${AGENT_PATH_HASH}  did not exist ! created one`);
         await fs.writeFile(AGENT_PATH_HASH,hash,{ flag: 'w+' ,encoding:"utf-8"})
     }
+
     const prevHash = await fs.readFile(AGENT_PATH_HASH,"utf-8")
     const prevEnvHash = await fs.readFile(AGENT_PATH_ENVHASH,"utf-8")
     if ((hash !== prevHash) || (env_hash !== prevEnvHash)) {
