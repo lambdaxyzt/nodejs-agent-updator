@@ -114,18 +114,18 @@ async function updateAgent() {
      // check if env file exist
     if (!fss.existsSync(AGENT_PATH_ENVHASH)) {
         logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
-        await fsExtra.outputFile(AGENT_PATH_ENVHASH,env_hash,"utf-8")
+        await fs.writeFile(AGENT_PATH_ENVHASH,env_hash,{ flag: 'w+' ,encoding:"utf-8"})
     }
     // check if hash file exist
     if (!fss.existsSync(AGENT_PATH_HASH)) {
         logger.info(`file : ${AGENT_PATH_HASH}  did not exist ! created one`);
-        await fsExtra.outputFile(AGENT_PATH_HASH,hash,"utf-8")
+        await fs.writeFile(AGENT_PATH_HASH,hash,{ flag: 'w+' ,encoding:"utf-8"})
     }
     const prevHash = await fs.readFile(AGENT_PATH_HASH,"utf-8")
     const prevEnvHash = await fs.readFile(AGENT_PATH_ENVHASH,"utf-8")
-
     if ((hash !== prevHash) || (env_hash !== prevEnvHash)) {
         const file_content = await getAgent()
+        console.log(await getAgent())
         const env_content =  await getAgentEnv() || {}
         console.log(env_content)
         await fs.writeFile(AGENT_PATH,file_content,"utf-8")
