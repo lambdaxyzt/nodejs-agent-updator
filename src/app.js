@@ -140,38 +140,46 @@ async function updateAgent() {
     }
     return false
 }
-
-try {
-    await pm2.connect()
-    if (!fss.existsSync(AGENT_ENV_PATH)) {
-        await fsExtra.outputFile(AGENT_ENV_PATH,JSON.stringify({}),"utf-8")
-    }
-    const env_file = JSON.parse(
-        fss.readFileSync(AGENT_ENV_PATH,"utf-8")
-    )
-
-    const agentUpdated = await updateAgent()
-    if(agentUpdated) {
-        logger.info(`agent updated !!! so go from pm2`);
-        if(! await isProcessStarted(AGENT_PROCESS_NAME)){
-            await pm2.start({
-                script    : AGENT_PATH,
-                name      : AGENT_PROCESS_NAME,
-                env       : env_file,
-            })
-            logger.info(`script did not start before , it now started`);
-        } else {
-            await pm2.delete(AGENT_PROCESS_NAME)
-            await pm2.start({
-                script    : AGENT_PATH,
-                name      : AGENT_PROCESS_NAME,
-                env       : env_file,
-            })
-            logger.info(`script restarted in pm2 watch agent !`);
+let n = 0;
+const fullProcess = async ()=>{
+    console.log("run:",n++)
+    try {
+        await pm2.connect()
+        if (!fss.existsSync(AGENT_ENV_PATH)) {
+            await fsExtra.outputFile(AGENT_ENV_PATH,JSON.stringify({}),"utf-8")
         }
+        const env_file = JSON.parse(
+            fss.readFileSync(AGENT_ENV_PATH,"utf-8")
+        )
+
+        const agentUpdated = await updateAgent()
+        if(agentUpdated) {
+            logger.info(`agent updated !!! so go from pm2`);
+            if(! await isProcessStarted(AGENT_PROCESS_NAME)){
+                await pm2.start({
+                    script    : AGENT_PATH,
+                    name      : AGENT_PROCESS_NAME,
+                    env       : env_file,
+                })
+                logger.info(`script did not start before , it now started`);
+            } else {
+                await pm2.delete(AGENT_PROCESS_NAME)
+                await pm2.start({
+                    script    : AGENT_PATH,
+                    name      : AGENT_PROCESS_NAME,
+                    env       : env_file,
+                })
+                logger.info(`script restarted in pm2 watch agent !`);
+            }
+        }
+    }catch (error) {
+        console.log(error)
+    } finally {
+        await pm2.disconnect()
     }
-}catch (error) {
-    console.log(error)
-} finally {
-    await pm2.disconnect()
 }
+
+await fullProcess()
+cron.schedule("*/20 * * * * *",async ()=>{
+    await fullProcess()
+})
