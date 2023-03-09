@@ -113,12 +113,12 @@ async function updateAgent() {
 
      // check if env file exist
     if (!fss.existsSync(AGENT_PATH_ENVHASH)) {
-        await fs.writeFile(AGENT_PATH_ENVHASH,env_hash,{ flag: 'w+' ,encoding:"utf-8"})
+        await fs.writeFile(AGENT_PATH_ENVHASH,"nohash",{ flag: 'w+' ,encoding:"utf-8"})
         logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
     }
     // check if hash file exist
     if (!fss.existsSync(AGENT_PATH_HASH)) {
-        await fs.writeFile(AGENT_PATH_HASH,hash,{ flag: 'w+' ,encoding:"utf-8"})
+        await fs.writeFile(AGENT_PATH_HASH,"nohash",{ flag: 'w+' ,encoding:"utf-8"})
         logger.info(`file : ${AGENT_PATH_HASH}  did not exist ! created one`);
     }
 
