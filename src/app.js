@@ -49,6 +49,7 @@ async function getAgentHash() {
         })
         .catch(function (error) {
             logger.error(error.message + " : error getting hash");
+            process.exit(2)
         })
 }
 
@@ -107,29 +108,28 @@ async function getAgentEnv() {
 
 async function updateAgent() {
     //get hash
-    const hash = await getAgentHash()
-    console.log("hash",hash)
+    const hash = await getAgentHash() || "nohashfound"
     const env_hash = await getAgentEnvHash() || "nohashfound"
-    console.log("updating agent")
 
      // check if env file exist
     if (!fss.existsSync(AGENT_PATH_ENVHASH)) {
-        logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
         await fs.writeFile(AGENT_PATH_ENVHASH,env_hash,{ flag: 'w+' ,encoding:"utf-8"})
+        logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
     }
     // check if hash file exist
     if (!fss.existsSync(AGENT_PATH_HASH)) {
-        logger.info(`file : ${AGENT_PATH_HASH}  did not exist ! created one`);
         await fs.writeFile(AGENT_PATH_HASH,hash,{ flag: 'w+' ,encoding:"utf-8"})
+        logger.info(`file : ${AGENT_PATH_HASH}  did not exist ! created one`);
     }
 
     const prevHash = await fs.readFile(AGENT_PATH_HASH,"utf-8")
     const prevEnvHash = await fs.readFile(AGENT_PATH_ENVHASH,"utf-8")
+    logger.debug(`hash : ${hash} ==? ${prevHash} : prevHash `)
+    logger.debug(`env_hash : ${env_hash} ==? ${prevEnvHash} : prevEnvHash `)
     if ((hash !== prevHash) || (env_hash !== prevEnvHash)) {
+        logger.debug(`some hash was different start updating file`)
         const file_content = await getAgent()
-        console.log(await getAgent())
         const env_content =  await getAgentEnv() || {}
-        console.log(env_content)
         await fs.writeFile(AGENT_PATH,file_content,"utf-8")
         logger.info(`successfully writing agent`);
         await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(env_content),"utf-8");
@@ -142,9 +142,9 @@ async function updateAgent() {
     }
     return false
 }
+
 let n = 0;
 const fullProcess = async ()=>{
-    console.log("run:",n++)
     try {
         await pm2.connect()
         if (!fss.existsSync(AGENT_ENV_PATH)) {
@@ -155,6 +155,7 @@ const fullProcess = async ()=>{
         )
 
         const agentUpdated = await updateAgent()
+        logger.info(`agent need update ? ${agentUpdated}`);
         if(agentUpdated) {
             logger.info(`agent updated !!! so go from pm2`);
             if(! await isProcessStarted(AGENT_PROCESS_NAME)){
