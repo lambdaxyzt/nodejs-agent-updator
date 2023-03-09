@@ -147,6 +147,9 @@ let n = 0;
 const fullProcess = async ()=>{
     try {
         await pm2.connect()
+
+        const agentUpdated = await updateAgent()
+
         if (!fss.existsSync(AGENT_ENV_PATH)) {
             await fsExtra.outputFile(AGENT_ENV_PATH,JSON.stringify({}),"utf-8")
         }
@@ -154,7 +157,6 @@ const fullProcess = async ()=>{
             fss.readFileSync(AGENT_ENV_PATH,"utf-8")
         )
 
-        const agentUpdated = await updateAgent()
         logger.debug(`env : \n${JSON.stringify(env_file,null,2)}`);
         logger.debug(`agent need update ? ${agentUpdated}`);
         if(agentUpdated) {
