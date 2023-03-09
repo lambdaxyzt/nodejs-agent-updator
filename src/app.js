@@ -155,7 +155,8 @@ const fullProcess = async ()=>{
         )
 
         const agentUpdated = await updateAgent()
-        logger.info(`agent need update ? ${agentUpdated}`);
+        logger.debug(`env : ${env_file}`);
+        logger.debug(`agent need update ? ${agentUpdated}`);
         if(agentUpdated) {
             logger.info(`agent updated !!! so go from pm2`);
             if(! await isProcessStarted(AGENT_PROCESS_NAME)){
