@@ -186,7 +186,7 @@ const fullProcess = async ()=>{
                 await pm2.start({
                     script    : AGENT_PATH,
                     name      : AGENT_PROCESS_NAME,
-                    env       : AGENT_ENV,
+                    env       : AGENT_ENV.env,
                 })
                 logger.info(`script did not start before , it now started`);
             } else {
@@ -194,7 +194,7 @@ const fullProcess = async ()=>{
                 await pm2.start({
                     script    : AGENT_PATH,
                     name      : AGENT_PROCESS_NAME,
-                    env       : AGENT_ENV,
+                    env       : AGENT_ENV.env,
                 })
                 logger.info(`script restarted in pm2 watch agent !`);
             }
