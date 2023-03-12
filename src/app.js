@@ -31,13 +31,20 @@ const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
 
+try{
+    fss.rmSync(AGENT_DIRECTORY,{ recursive: true, force: true })
+    fss.mkdirSync(AGENT_DIRECTORY)
+}catch (error) {
+    console.log(error)
+}
+
 if (!fss.existsSync(AGENT_PATH)) {
-    fss.writeFileSync(AGENT_PATH_ENVHASH,"noagentyet",{ flag: 'w+' ,encoding:"utf-8"})
-    logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
+    fss.writeFileSync(AGENT_PATH,"noagentyet",{ flag: 'w+' ,encoding:"utf-8"})
+    logger.info(`file : ${AGENT_PATH}  did not exist ! created one`);
 }
 if (!fss.existsSync(AGENT_ENV_PATH)) {
-    fss.writeFileSync(AGENT_PATH_ENVHASH,JSON.stringify({agentHash:"nohashyet",env:{hash:"nohashyet"}}),{ flag: 'w+' ,encoding:"utf-8"})
-    logger.info(`file : ${AGENT_PATH_ENVHASH}  did not exist ! created one`);
+    fss.writeFileSync(AGENT_ENV_PATH,JSON.stringify({agentHash:"nohashyet",env:{hash:"nohashyet"}}),{ flag: 'w+' ,encoding:"utf-8"})
+    logger.info(`file : ${AGENT_ENV_PATH}  did not exist ! created one`);
 }
 
 const fetchOption = {
@@ -129,6 +136,7 @@ async function updateAgent() {
     const ENV = JSON.parse(await fs.readFile(AGENT_ENV_PATH,"utf-8"))
     const prevAgentHash = ENV.agentHash
     const prevEnvHash = ENV.env.hash
+
     logger.debug("prevAgentHash: ",prevAgentHash)
     logger.debug("prevEnvHash: ",prevEnvHash)
 
@@ -138,15 +146,16 @@ async function updateAgent() {
         const file_content = await getAgent()    || "noagentfound!"
         const env_content =  await getAgentEnv() || {}
 
-        ENV.env = {...env_content,hash:EnvHash}
+        ENV.env = {...env_content,hash: EnvHash}
         ENV.agentHash = AgentHash
+
 
         await fs.writeFile(AGENT_PATH,file_content,"utf-8")
         logger.debug(`agent new content: ${file_content}`);
         logger.info(`successfully writing agent`);
 
-        await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(env_content),"utf-8");
-        logger.debug(`env new content: ${env_content}`);
+        await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(ENV),"utf-8");
+        logger.debug(`env new content: ${ENV}`);
         logger.info(`successfully writing agent env file`);
 
         return true
@@ -157,19 +166,19 @@ async function updateAgent() {
 let n = 0;
 const fullProcess = async ()=>{
     try {
+        await pm2.connect()
 
         const agentUpdated = await updateAgent()
 
-        let {env:AGENT_ENV} = JSON.parse(
+        let AGENT_ENV = JSON.parse(
             fss.readFileSync(AGENT_ENV_PATH,"utf-8")
         )
-        delete AGENT_ENV.hash
+        delete AGENT_ENV.env.hash
 
         logger.debug(`env : \n${JSON.stringify(AGENT_ENV,null,2)}`);
         logger.debug(`agent need update ? ${agentUpdated}`);
 
 
-        await pm2.connect()
 
         if(agentUpdated) {
             logger.info(`agent updated !!! so go from pm2`);
@@ -199,6 +208,6 @@ const fullProcess = async ()=>{
 }
 
 await fullProcess()
-cron.schedule("*/20 * * * * *",async ()=>{
+cron.schedule("*/30 * * * *",async ()=>{
     await fullProcess()
 })
