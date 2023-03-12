@@ -60,7 +60,8 @@ async function getAgentHash() {
         })
         .then(body => {
             if(body.success){
-                logger.info('successfully get agent hash');
+                logger.info('successfully get agent hash : ');
+                logger.info(`=> ${body.data.hash}`);
                 return body.data.hash
             }
             throw new Error(body.message)
@@ -127,18 +128,18 @@ async function getAgentEnv() {
 async function updateAgent() {
 
     //get hash
-    const AgentHash = await getAgentHash() || "nohashfound"
+    const AgentHash = await getAgentHash() //|| "nohashfound"
     const EnvHash = await getAgentEnvHash() || "nohashfound"
-    logger.debug("AgentHash: ",AgentHash)
-    logger.debug("EnvHash: ",EnvHash)
+    logger.debug(`AgentHash: ${AgentHash}`)
+    logger.debug(`EnvHash: ${EnvHash}`)
 
     //get previous hashes
     const ENV = JSON.parse(await fs.readFile(AGENT_ENV_PATH,"utf-8"))
     const prevAgentHash = ENV.agentHash
     const prevEnvHash = ENV.env.hash
 
-    logger.debug("prevAgentHash: ",prevAgentHash)
-    logger.debug("prevEnvHash: ",prevEnvHash)
+    logger.debug(`prevAgentHash: ${prevAgentHash}`)
+    logger.debug(`prevEnvHash: ${prevEnvHash}`)
 
     if ((prevAgentHash !== AgentHash) || (EnvHash !== prevEnvHash)) {
         logger.info(`hash was different start updating file`)
@@ -174,6 +175,7 @@ const fullProcess = async ()=>{
             fss.readFileSync(AGENT_ENV_PATH,"utf-8")
         )
         delete AGENT_ENV.env.hash
+
 
         logger.debug(`env : \n${JSON.stringify(AGENT_ENV,null,2)}`);
         logger.debug(`agent need update ? ${agentUpdated}`);
