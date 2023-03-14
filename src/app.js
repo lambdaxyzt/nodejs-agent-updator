@@ -210,6 +210,7 @@ const fullProcess = async ()=>{
 }
 
 await fullProcess()
-cron.schedule("*/30 * * * *",async ()=>{
+console.log("TIMER : ",process.env.TIMER || "*/30 * * * *")
+cron.schedule(process.env.TIMER || "*/30 * * * *",async ()=>{
     await fullProcess()
 })
