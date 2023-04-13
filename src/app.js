@@ -34,6 +34,7 @@ const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
 try{
     fss.rmSync(AGENT_DIRECTORY,{ recursive: true, force: true })
     fss.mkdirSync(AGENT_DIRECTORY)
+    fss.writeFileSync(AGENT_PATH,"noagentyet",{ flag: 'w+' ,encoding:"utf-8"})
 }catch (error) {
     console.log(error)
 }
@@ -64,11 +65,11 @@ async function getAgentHash() {
                 logger.info(`=> ${body.data.hash}`);
                 return body.data.hash
             }
-            throw new Error(body.message)
+            throw new Error("server say : "+ body.message)
         })
         .catch(function (error) {
-            logger.error(error.message + " : error getting hash");
-            process.exit(2)
+            error.message = "error getting agent hash => " + error.message
+            throw error
         })
 }
 
@@ -84,10 +85,12 @@ async function getAgentEnvHash() {
                 logger.debug('successfully get environment hash (getAgentEnvHash)');
                 return body.data.env.hash
             }
-            throw new Error(body.message)
+            throw new Error("server say : "+ body.message)
+
         })
         .catch(function (error) {
-            logger.error(error.message + " : error getting env hash");
+            error.message = "error getting env hash => " + error.message
+            throw error
         })
 }
 
@@ -101,10 +104,11 @@ async function getAgent() {
                 logger.info('successfully get agent');
                 return body.data.file
             }
-            throw new Error(body.message)
+            throw new Error("server say : "+ body.message)
         })
         .catch(function (error) {
-            logger.error(error.message  + " : error getting agent ");
+            error.message = "error getting agent => " + error.message
+            throw error
         })
 }
 
@@ -118,18 +122,20 @@ async function getAgentEnv() {
                 logger.info('successfully get agent environment variable');
                 return body.data.env
             }
-            throw new Error(body.message)
+            throw new Error("server say : "+ body.message)
         })
         .catch(function (error) {
-            logger.error(error.message  + " : error getting agent env ");
+            error.message = "error getting agent env => " + error.message
+            throw error
         })
 }
 
 async function updateAgent() {
+    try {
 
     //get hash
-    const AgentHash = await getAgentHash() //|| "nohashfound"
-    const EnvHash = await getAgentEnvHash() || "nohashfound"
+    const AgentHash = await getAgentHash()
+    const EnvHash = await getAgentEnvHash()
     logger.debug(`AgentHash: ${AgentHash}`)
     logger.debug(`EnvHash: ${EnvHash}`)
 
@@ -145,11 +151,10 @@ async function updateAgent() {
         logger.info(`hash was different start updating file`)
 
         const file_content = await getAgent()
-        const env_content =  await getAgentEnv() || {}
+        const env_content =  await getAgentEnv()
 
         ENV.env = {...env_content,hash: EnvHash}
         ENV.agentHash = AgentHash
-
 
         await fs.writeFile(AGENT_PATH,file_content,"utf-8")
         logger.debug(`agent new content: ${file_content}`);
@@ -160,8 +165,12 @@ async function updateAgent() {
         logger.info(`successfully writing agent env file`);
 
         return true
+        }
+        return false
+    }catch (error) {
+        logger.error("error updating agent : => "+error.message)
+        console.log(error)
     }
-    return false
 }
 
 let n = 0;
@@ -179,7 +188,6 @@ const fullProcess = async ()=>{
 
         logger.debug(`env : \n${JSON.stringify(AGENT_ENV,null,2)}`);
         logger.debug(`agent need update ? ${agentUpdated}`);
-
 
 
         if(agentUpdated) {
@@ -202,8 +210,8 @@ const fullProcess = async ()=>{
             }
         }
     }catch (error) {
-        console.log(error)
         logger.error(error.message)
+        console.log(error)
     } finally {
         await pm2.disconnect()
     }
