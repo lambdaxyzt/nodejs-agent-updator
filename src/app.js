@@ -144,7 +144,7 @@ async function updateAgent() {
     if ((prevAgentHash !== AgentHash) || (EnvHash !== prevEnvHash)) {
         logger.info(`hash was different start updating file`)
 
-        const file_content = await getAgent()    || "noagentfound!"
+        const file_content = await getAgent()
         const env_content =  await getAgentEnv() || {}
 
         ENV.env = {...env_content,hash: EnvHash}
