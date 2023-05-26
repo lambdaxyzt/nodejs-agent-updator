@@ -31,6 +31,16 @@ const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
 
+try{
+    fss.rmSync(AGENT_ENV_PATH,{ recursive: true, force: true })
+}catch (error) {
+    console.log(error)
+}
+
+if (!fss.existsSync(AGENT_DIRECTORY)) {
+    fss.mkdirSync(AGENT_DIRECTORY)
+}
+
 if (!fss.existsSync(AGENT_PATH)) {
     fss.writeFileSync(AGENT_PATH,"noagentyet",{ flag: 'w+' ,encoding:"utf-8"})
     logger.info(`file : ${AGENT_PATH}  did not exist ! created one`);
