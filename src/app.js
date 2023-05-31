@@ -31,11 +31,6 @@ const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
 
-try{
-    fss.rmSync(AGENT_ENV_PATH,{ recursive: true, force: true })
-}catch (error) {
-    console.log(error)
-}
 
 if (!fss.existsSync(AGENT_DIRECTORY)) {
     fss.mkdirSync(AGENT_DIRECTORY)
@@ -148,27 +143,7 @@ async function updateAgent() {
 
     logger.debug(`prevAgentHash: ${prevAgentHash}`)
     logger.debug(`prevEnvHash: ${prevEnvHash}`)
-        if ((prevAgentHash !== AgentHash)  ) {
-            logger.info(`hash was different start updating file`)
-
-            const file_content = await getAgent()
-            const env_content =  await getAgentEnv()
-
-            ENV.env = {...env_content,hash: EnvHash}
-            ENV.agentHash = AgentHash
-
-            await fs.writeFile(AGENT_PATH,file_content,"utf-8")
-            logger.debug(`agent new content: ${file_content}`);
-            logger.info(`successfully writing agent`);
-
-            await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(ENV),"utf-8");
-            logger.debug(`env new content: ${ENV}`);
-            logger.info(`successfully writing agent env file`);
-
-            return true
-        }
-        return false
-    if ( (EnvHash !== prevEnvHash)) {
+    if ( (EnvHash !== prevEnvHash) || (prevAgentHash !== AgentHash) ) {
         logger.info(`envvvv was different start updating file`)
 
         const env_content =  await getAgentEnv()
