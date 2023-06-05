@@ -31,12 +31,9 @@ const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
 
-try{
-    fss.rmSync(AGENT_DIRECTORY,{ recursive: true, force: true })
+
+if (!fss.existsSync(AGENT_DIRECTORY)) {
     fss.mkdirSync(AGENT_DIRECTORY)
-    fss.writeFileSync(AGENT_PATH,"noagentyet",{ flag: 'w+' ,encoding:"utf-8"})
-}catch (error) {
-    console.log(error)
 }
 
 if (!fss.existsSync(AGENT_PATH)) {
@@ -133,38 +130,32 @@ async function getAgentEnv() {
 async function updateAgent() {
     try {
 
-        //get hash
-        const AgentHash = await getAgentHash()
-        const EnvHash = await getAgentEnvHash()
-        logger.debug(`AgentHash: ${AgentHash}`)
-        logger.debug(`EnvHash: ${EnvHash}`)
+    //get hash
+    const AgentHash = await getAgentHash()
+    const EnvHash = await getAgentEnvHash()
+    logger.debug(`AgentHash: ${AgentHash}`)
+    logger.debug(`EnvHash: ${EnvHash}`)
 
-        //get previous hashes
-        const ENV = JSON.parse(await fs.readFile(AGENT_ENV_PATH,"utf-8"))
-        const prevAgentHash = ENV.agentHash
-        const prevEnvHash = ENV.env.hash
+    //get previous hashes
+    const ENV = JSON.parse(await fs.readFile(AGENT_ENV_PATH,"utf-8"))
+    const prevAgentHash = ENV.agentHash
+    const prevEnvHash = ENV.env.hash
 
-        logger.debug(`prevAgentHash: ${prevAgentHash}`)
-        logger.debug(`prevEnvHash: ${prevEnvHash}`)
+    logger.debug(`prevAgentHash: ${prevAgentHash}`)
+    logger.debug(`prevEnvHash: ${prevEnvHash}`)
+    if ( (EnvHash !== prevEnvHash) || (prevAgentHash !== AgentHash) ) {
+        logger.info(`env was different start updating file`)
 
-        if ((prevAgentHash !== AgentHash) || (EnvHash !== prevEnvHash)) {
-            logger.info(`hash was different start updating file`)
+        const env_content =  await getAgentEnv()
 
-            const file_content = await getAgent()
-            const env_content =  await getAgentEnv()
+        ENV.env = {...env_content,hash: EnvHash}
+        ENV.agentHash = AgentHash
 
-            ENV.env = {...env_content,hash: EnvHash}
-            ENV.agentHash = AgentHash
+        await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(ENV),"utf-8");
+        logger.debug(`env new content: ${ENV}`);
+        logger.info(`successfully writing agent env file`);
 
-            await fs.writeFile(AGENT_PATH,file_content,"utf-8")
-            logger.debug(`agent new content: ${file_content}`);
-            logger.info(`successfully writing agent`);
-
-            await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(ENV),"utf-8");
-            logger.debug(`env new content: ${ENV}`);
-            logger.info(`successfully writing agent env file`);
-
-            return true
+        return true
         }
         return false
     }catch (error) {
