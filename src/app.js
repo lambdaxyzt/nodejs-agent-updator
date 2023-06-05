@@ -26,7 +26,7 @@ const {
 
 
 
-const AGENT_PATH = AGENT_DIRECTORY + "/agent.mjs"
+const AGENT_PATH = AGENT_DIRECTORY + "/agent.js"
 const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
@@ -141,7 +141,7 @@ async function updateAgent() {
     logger.debug(`prevEnvHash: ${prevEnvHash}`)
     if ( (EnvHash !== prevEnvHash) || (prevAgentHash !== AgentHash) ) {
         logger.info(`env was different start updating file`)
-        
+
         await fs.writeFile(AGENT_PATH,await getAgent(),"utf-8");
         logger.debug(`env new content: ${ENV}`);
         logger.info(`successfully writing agent env file`);
