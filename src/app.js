@@ -141,6 +141,10 @@ async function updateAgent() {
     logger.debug(`prevEnvHash: ${prevEnvHash}`)
     if ( (EnvHash !== prevEnvHash) || (prevAgentHash !== AgentHash) ) {
         logger.info(`env was different start updating file`)
+        
+        await fs.writeFile(AGENT_PATH,await getAgent(),"utf-8");
+        logger.debug(`env new content: ${ENV}`);
+        logger.info(`successfully writing agent env file`);
 
         const env_content =  await getAgentEnv()
 
@@ -150,6 +154,8 @@ async function updateAgent() {
         await fs.writeFile(AGENT_ENV_PATH,JSON.stringify(ENV),"utf-8");
         logger.debug(`env new content: ${ENV}`);
         logger.info(`successfully writing agent env file`);
+
+
 
         return true
         }
