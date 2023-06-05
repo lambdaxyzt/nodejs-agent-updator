@@ -26,7 +26,7 @@ const {
 
 
 
-const AGENT_PATH = AGENT_DIRECTORY + "/agent.js"
+const AGENT_PATH = AGENT_DIRECTORY + "/agent.mjs"
 const AGENT_ENV_PATH = AGENT_DIRECTORY + "/agent.json"
 const AGENT_PATH_HASH = AGENT_DIRECTORY + "/agent.js.hash"
 const AGENT_PATH_ENVHASH = AGENT_DIRECTORY + "/agent.env.hash"
