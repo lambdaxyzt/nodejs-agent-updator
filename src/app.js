@@ -6,10 +6,9 @@ import { Env } from "@humanwhocodes/env";
 const env = new Env();
 import fs from "fs/promises"
 import fss from "fs"
-import fsExtra from "fs-extra"
 import fetch from "node-fetch"
 import pm2 from "./pm2/pm2-promise.js"
-import {isProcessStarted, ListOfProcess} from "./pm2/pm2-util.js";
+import {isProcessStarted} from "./pm2/pm2-util.js";
 import cron from "node-cron";
 import logger from "./logging/index.js";
 
@@ -209,9 +208,11 @@ const fullProcess = async ()=>{
         await pm2.disconnect()
     }
 }
+(async function(){
 
 await fullProcess()
 console.log("TIMER : ",process.env.TIMER || "*/30 * * * *")
 cron.schedule(process.env.TIMER || "*/30 * * * *",async ()=>{
     await fullProcess()
 })
+})()

@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development node src/app.js",
+    "build": "esbuild src/app.js --platform=node --bundle --minify  --outdir=build --format=cjs",
     "start": "node src/app.js"
   },
   "keywords": [],
