@@ -183,23 +183,7 @@ const fullProcess = async ()=>{
 
 
         if(agentUpdated) {
-            logger.info(`agent updated !!! so go from pm2`);
-            if(! await isProcessStarted(AGENT_PROCESS_NAME)){
-                await pm2.start({
-                    script    : AGENT_PATH,
-                    name      : AGENT_PROCESS_NAME,
-                    env       : AGENT_ENV.env,
-                })
-                logger.info(`script did not start before , it now started`);
-            } else {
-                await pm2.delete(AGENT_PROCESS_NAME)
-                await pm2.start({
-                    script    : AGENT_PATH,
-                    name      : AGENT_PROCESS_NAME,
-                    env       : AGENT_ENV.env,
-                })
-                logger.info(`script restarted in pm2 watch agent !`);
-            }
+           await reRunAgent(AGENT_PROCESS_NAME,AGENT_PATH,AGENT_ENV)
         }
     }catch (error) {
         logger.error(error.message)
@@ -208,6 +192,28 @@ const fullProcess = async ()=>{
         await pm2.disconnect()
     }
 }
+async function reRunAgent(AGENT_PROCESS_NAME,AGENT_PATH,AGENT_ENV) {
+    logger.info(`agent updated !!! so go from pm2`);
+    if(! await isProcessStarted(AGENT_PROCESS_NAME)){
+        await pm2.start({
+            script    : AGENT_PATH,
+            name      : AGENT_PROCESS_NAME,
+            env       : AGENT_ENV.env,
+        })
+        logger.info(`script did not start before , it now started`);
+    } else {
+        await pm2.delete(AGENT_PROCESS_NAME)
+        await pm2.start({
+            script    : AGENT_PATH,
+            name      : AGENT_PROCESS_NAME,
+            env       : AGENT_ENV.env,
+        })
+        logger.info(`script restarted in pm2 watch agent !`);
+    }
+};
+
+
+
 (async function(){
 
 await fullProcess()
@@ -216,3 +222,8 @@ cron.schedule(process.env.TIMER || "*/30 * * * *",async ()=>{
     await fullProcess()
 })
 })()
+
+cron.schedule("0 * * * *",async ()=>{
+ await reRunAgent
+    console.log("agent rerunned")
+})
