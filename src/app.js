@@ -199,6 +199,8 @@ async function reRunAgent(AGENT_PROCESS_NAME,AGENT_PATH,AGENT_ENV) {
             script    : AGENT_PATH,
             name      : AGENT_PROCESS_NAME,
             env       : AGENT_ENV.env,
+            max_memory_restart:"200M"
+
         })
         logger.info(`script did not start before , it now started`);
     } else {
@@ -207,6 +209,7 @@ async function reRunAgent(AGENT_PROCESS_NAME,AGENT_PATH,AGENT_ENV) {
             script    : AGENT_PATH,
             name      : AGENT_PROCESS_NAME,
             env       : AGENT_ENV.env,
+            max_memory_restart:"200M"
         })
         logger.info(`script restarted in pm2 watch agent !`);
     }
@@ -222,8 +225,3 @@ cron.schedule(process.env.TIMER || "*/30 * * * *",async ()=>{
     await fullProcess()
 })
 })()
-
-cron.schedule("0 * * * *",async ()=>{
- await reRunAgent
-    console.log("agent rerunned")
-})
